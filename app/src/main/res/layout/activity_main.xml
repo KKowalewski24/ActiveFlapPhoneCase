@@ -9,11 +9,15 @@
     <Button
             android:text=""
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/adminButton"
-            android:layout_marginTop="100dp"
+            android:layout_height="wrap_content" android:id="@+id/adminButtonEnable"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="40dp"
     />
-    <TextView
-            android:text="TextView"
+    <Button
+            android:text=""
             android:layout_width="match_parent"
-            android:layout_height="120dp" android:id="@+id/textView"/>
+            android:layout_height="wrap_content" android:id="@+id/adminButtonDisable"
+            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="40dp"
+    />
 </LinearLayout>
