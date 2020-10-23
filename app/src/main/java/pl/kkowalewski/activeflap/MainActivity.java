@@ -18,8 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     /*------------------------ FIELDS REGION ------------------------*/
-    private static final float PROXIMITY_THRESHOLD = 1.0f;
-    private static final int RESULT_ENABLE = 1;
+    public static final float PROXIMITY_THRESHOLD = 1.0f;
+    public static final int RESULT_ENABLE = 1;
     public static final String ADD_ADMIN_PRIVILEGES = "Add Admin Privileges";
     public static final String REMOVE_ADMIN_PRIVILEGES = "Remove Admin Privileges";
 
@@ -34,24 +34,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, ActiveFlapService.class));
         setContentView(R.layout.activity_main);
 
         fieldSetup();
         buttonSetup();
         onClickSetup();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        sensorManager.registerListener(this, proximitySensor,
-                SensorManager.SENSOR_DELAY_FASTEST);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        sensorManager.unregisterListener(this);
+        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     @Override
