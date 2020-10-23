@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button adminButtonDisable;
     private SensorManager sensorManager;
     private Sensor proximitySensor;
-    private DevicePolicyManager deviceManger;
+    private DevicePolicyManager devicePolicyManager;
     private ComponentName componentName;
 
     /*------------------------ METHODS REGION ------------------------*/
@@ -46,11 +46,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_PROXIMITY
-                && deviceManger.isAdminActive(componentName)) {
+                && devicePolicyManager.isAdminActive(componentName)) {
             final float distance = event.values[0];
 
             if (distance <= PROXIMITY_THRESHOLD) {
-                deviceManger.lockNow();
+                devicePolicyManager.lockNow();
             } else {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             }
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         adminButtonEnable.setText(ADD_ADMIN_PRIVILEGES);
         adminButtonDisable.setText(REMOVE_ADMIN_PRIVILEGES);
 
-        boolean isAdmin = deviceManger.isAdminActive(componentName);
+        boolean isAdmin = devicePolicyManager.isAdminActive(componentName);
         adminButtonEnable.setVisibility(isAdmin ? View.GONE : View.VISIBLE);
         adminButtonDisable.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
     }
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void fieldSetup() {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        deviceManger = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         componentName = new ComponentName(this, Admin.class);
     }
 
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         adminButtonDisable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deviceManger.removeActiveAdmin(componentName);
+                devicePolicyManager.removeActiveAdmin(componentName);
                 adminButtonDisable.setVisibility(View.GONE);
                 adminButtonEnable.setVisibility(View.VISIBLE);
             }
