@@ -22,25 +22,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public static final int RESULT_ENABLE = 1;
     public static final String ADD_ADMIN_PRIVILEGES = "Add Admin Privileges";
     public static final String REMOVE_ADMIN_PRIVILEGES = "Remove Admin Privileges";
+    public static final String START_SERVICE = "Start Service";
+    public static final String STOP_SERVICE = "Stop Service";
 
     private Button adminButtonEnable;
     private Button adminButtonDisable;
+    private Button startServiceButton;
+    private Button stopServiceButton;
+
     private SensorManager sensorManager;
     private Sensor proximitySensor;
     private DevicePolicyManager devicePolicyManager;
     private ComponentName componentName;
+    private Intent activeFlapServiceIntent;
 
     /*------------------------ METHODS REGION ------------------------*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startService(new Intent(this, ActiveFlapService.class));
         setContentView(R.layout.activity_main);
 
         fieldSetup();
         buttonSetup();
         onClickSetup();
-        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        sensorManager.registerListener(this, proximitySensor,
+                SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     @Override
@@ -68,8 +75,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void buttonSetup() {
         adminButtonEnable = findViewById(R.id.adminButtonEnable);
         adminButtonDisable = findViewById(R.id.adminButtonDisable);
+        startServiceButton = findViewById(R.id.startServiceButton);
+        stopServiceButton = findViewById(R.id.stopServiceButton);
+
         adminButtonEnable.setText(ADD_ADMIN_PRIVILEGES);
         adminButtonDisable.setText(REMOVE_ADMIN_PRIVILEGES);
+        startServiceButton.setText(START_SERVICE);
+        stopServiceButton.setText(STOP_SERVICE);
 
         boolean isAdmin = devicePolicyManager.isAdminActive(componentName);
         adminButtonEnable.setVisibility(isAdmin ? View.GONE : View.VISIBLE);
@@ -81,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         componentName = new ComponentName(this, Admin.class);
+        activeFlapServiceIntent = new Intent(MainActivity.this, ActiveFlapService.class);
     }
 
     private void onClickSetup() {
@@ -101,6 +114,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 devicePolicyManager.removeActiveAdmin(componentName);
                 adminButtonDisable.setVisibility(View.GONE);
                 adminButtonEnable.setVisibility(View.VISIBLE);
+            }
+        });
+
+        startServiceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startService(activeFlapServiceIntent);
+            }
+        });
+
+        stopServiceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopService(activeFlapServiceIntent);
             }
         });
     }
