@@ -88,7 +88,7 @@ public class ActiveFlapService extends Service implements SensorEventListener {
                 try {
                     final int screenOffTimeout = Settings.System.getInt(getContentResolver(),
                             Settings.System.SCREEN_OFF_TIMEOUT);
-                    wakeLock.acquire(screenOffTimeout);
+                    wakeLock.acquire((long) (screenOffTimeout * 0.25));
                 } catch (Settings.SettingNotFoundException e) {
                     Toast.makeText(getApplicationContext(),
                             SYSTEM_SCREEN_OFF_TIMEOUT, Toast.LENGTH_SHORT).show();
