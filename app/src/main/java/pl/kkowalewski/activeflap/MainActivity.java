@@ -4,18 +4,12 @@ import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity {
 
     /*------------------------ FIELDS REGION ------------------------*/
     public static final float PROXIMITY_THRESHOLD = 1.0f;
@@ -30,8 +24,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button startServiceButton;
     private Button stopServiceButton;
 
-    private SensorManager sensorManager;
-    private Sensor proximitySensor;
     private DevicePolicyManager devicePolicyManager;
     private ComponentName componentName;
     private Intent activeFlapServiceIntent;
@@ -45,31 +37,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         fieldSetup();
         buttonSetup();
         onClickSetup();
-
-        sensorManager.registerListener(this, proximitySensor,
-                SensorManager.SENSOR_DELAY_FASTEST);
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY
-                && devicePolicyManager.isAdminActive(componentName)) {
-            final float distance = event.values[0];
-
-            if (distance <= PROXIMITY_THRESHOLD) {
-                devicePolicyManager.lockNow();
-            } else {
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-            }
-        } else {
-            Toast.makeText(getApplicationContext(),
-                    ADD_ADMIN_PRIVILEGES, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     private void buttonSetup() {
@@ -89,8 +56,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void fieldSetup() {
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         componentName = new ComponentName(this, Admin.class);
         activeFlapServiceIntent = new Intent(MainActivity.this, ActiveFlapService.class);
