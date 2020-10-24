@@ -17,13 +17,15 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import static pl.kkowalewski.activeflap.MainActivity.ADD_ADMIN_PRIVILEGES;
+import static pl.kkowalewski.activeflap.MainActivity.COMPONENT_NAME;
 import static pl.kkowalewski.activeflap.MainActivity.PROXIMITY_THRESHOLD;
 
 public class ActiveFlapService extends Service implements SensorEventListener {
 
     /*------------------------ FIELDS REGION ------------------------*/
-    private static final int NOTIFICATION_ID = 1;
-    private static final String NOTIFICATION_CHANNEL_ID = "Channel_Id";
+    public static final int NOTIFICATION_ID = 1;
+    public static final String NOTIFICATION_CHANNEL_ID = "Channel_Id";
+    public static final String WAKE_LOCK_TAG = ":TAG";
 
     private DevicePolicyManager devicePolicyManager;
     private ComponentName componentName;
@@ -40,7 +42,7 @@ public class ActiveFlapService extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        componentName = new ComponentName(this, Admin.class);
+        componentName = (ComponentName) intent.getExtras().get(COMPONENT_NAME);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         sensorManager.registerListener(this, proximitySensor,
@@ -74,13 +76,14 @@ public class ActiveFlapService extends Service implements SensorEventListener {
             if (distance <= PROXIMITY_THRESHOLD) {
                 devicePolicyManager.lockNow();
             } else {
-                PowerManager pm = (PowerManager) getApplicationContext()
+                PowerManager powerManager = (PowerManager) getApplicationContext()
                         .getSystemService(Context.POWER_SERVICE);
-                PowerManager.WakeLock wakeLock = pm
-                        .newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), ":TAG123");
+                PowerManager.WakeLock wakeLock = powerManager
+                        .newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK
+                                | PowerManager.FULL_WAKE_LOCK
+                                | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                        ), WAKE_LOCK_TAG);
                 wakeLock.acquire();
-                //                new MainActivity().getWindow()
-                //                        .addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             }
         } else {
             Toast.makeText(getApplicationContext(),
