@@ -12,13 +12,15 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import static pl.kkowalewski.activeflap.MainActivity.ADD_ADMIN_PRIVILEGES;
-import static pl.kkowalewski.activeflap.MainActivity.COMPONENT_NAME;
+import static pl.kkowalewski.activeflap.MainActivity.EXTRA_KEY_COMPONENT_NAME;
 import static pl.kkowalewski.activeflap.MainActivity.PROXIMITY_THRESHOLD;
+import static pl.kkowalewski.activeflap.MainActivity.SYSTEM_SCREEN_OFF_TIMEOUT;
 
 public class ActiveFlapService extends Service implements SensorEventListener {
 
@@ -42,7 +44,7 @@ public class ActiveFlapService extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        componentName = (ComponentName) intent.getExtras().get(COMPONENT_NAME);
+        componentName = (ComponentName) intent.getExtras().get(EXTRA_KEY_COMPONENT_NAME);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         sensorManager.registerListener(this, proximitySensor,
@@ -83,7 +85,14 @@ public class ActiveFlapService extends Service implements SensorEventListener {
                                 | PowerManager.FULL_WAKE_LOCK
                                 | PowerManager.ACQUIRE_CAUSES_WAKEUP
                         ), WAKE_LOCK_TAG);
-                wakeLock.acquire();
+                try {
+                    final int screenOffTimeout = Settings.System.getInt(getContentResolver(),
+                            Settings.System.SCREEN_OFF_TIMEOUT);
+                    wakeLock.acquire(screenOffTimeout);
+                } catch (Settings.SettingNotFoundException e) {
+                    Toast.makeText(getApplicationContext(),
+                            SYSTEM_SCREEN_OFF_TIMEOUT, Toast.LENGTH_SHORT).show();
+                }
             }
         } else {
             Toast.makeText(getApplicationContext(),

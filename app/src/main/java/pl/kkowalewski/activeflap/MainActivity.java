@@ -18,7 +18,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String REMOVE_ADMIN_PRIVILEGES = "Remove Admin Privileges";
     public static final String START_SERVICE = "Start Service";
     public static final String STOP_SERVICE = "Stop Service";
-    public static final String COMPONENT_NAME = "componentName";
+    public static final String SYSTEM_SCREEN_OFF_TIMEOUT = "Screen Off Timeout Not Found";
+    public static final String EXTRA_KEY_COMPONENT_NAME = "componentName";
 
     private Button adminButtonEnable;
     private Button adminButtonDisable;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         componentName = new ComponentName(this, Admin.class);
         activeFlapServiceIntent = new Intent(MainActivity.this, ActiveFlapService.class);
-        activeFlapServiceIntent.putExtra(COMPONENT_NAME, componentName);
+        activeFlapServiceIntent.putExtra(EXTRA_KEY_COMPONENT_NAME, componentName);
     }
 
     private void onClickSetup() {
