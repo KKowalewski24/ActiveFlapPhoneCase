@@ -1,20 +1,26 @@
 package pl.kkowalewski.activeflap;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import static pl.kkowalewski.activeflap.MainActivity.ADD_ADMIN_PRIVILEGES;
@@ -27,7 +33,9 @@ public class ActiveFlapService extends Service implements SensorEventListener {
     /*------------------------ FIELDS REGION ------------------------*/
     public static final int NOTIFICATION_ID = 1;
     public static final String NOTIFICATION_CHANNEL_ID = "Channel_Id";
+    public static final String NOTIFICATION_CHANNEL_NAME = "Channel_Name";
     public static final String WAKE_LOCK_TAG = ":TAG";
+    public static final String SERVICE_RUNNING_IN_BACKGROUND = "Service is running background";
 
     private DevicePolicyManager devicePolicyManager;
     private ComponentName componentName;
@@ -50,11 +58,41 @@ public class ActiveFlapService extends Service implements SensorEventListener {
         sensorManager.registerListener(this, proximitySensor,
                 SensorManager.SENSOR_DELAY_FASTEST);
 
-        startForeground();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundForNewDevices();
+        } else {
+            startForegroundForOldDevices();
+        }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void startForeground() {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void startForegroundForNewDevices() {
+        NotificationChannel channel = new NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                NOTIFICATION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_NONE
+        );
+        channel.setLightColor(Color.BLUE);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        NotificationManager manager = (NotificationManager)
+                getSystemService(Context.NOTIFICATION_SERVICE);
+        assert manager != null;
+        manager.createNotificationChannel(channel);
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat
+                .Builder(this, NOTIFICATION_CHANNEL_ID);
+
+        startForeground(NOTIFICATION_ID, notificationBuilder
+                .setOngoing(true)
+                .setContentTitle(SERVICE_RUNNING_IN_BACKGROUND)
+                .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setCategory(Notification.CATEGORY_SERVICE)
+                .build());
+    }
+
+    private void startForegroundForOldDevices() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
 
         PendingIntent pendingIntent = PendingIntent
